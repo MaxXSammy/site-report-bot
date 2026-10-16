@@ -1,0 +1,17 @@
+python-dotenv
+pydantic
+
+# KI
+ollama
+faster-whisper
+
+# PDF
+fpdf2
+
+# WhatsApp-Webhook (Webserver)
+fastapi
+uvicorn[standard]
+httpx
+
+# Tests
+pytest
