@@ -19,10 +19,10 @@ class LaborEntry(BaseModel):
 class ReportContent(BaseModel):
     """Felder, die das LLM aus den Nachrichten des Handwerkers extrahiert."""
 
-    project_name: str | None = Field(default=None, description="Name des Bauvorhabens")
-    site_address: str | None = Field(default=None, description="Adresse der Baustelle")
-    customer_name: str | None = Field(default=None, description="Name des Auftraggebers")
-    trade: str | None = Field(default=None, description="Gewerk, z. B. Trockenbau, Elektro, Sanitär")
+    project_name: str = Field(default="", description="Bezeichnung des Bauvorhabens, z. B. 'Baustelle Müller'. Leer, wenn nicht genannt.")
+    site_address: str = Field(default="", description="Adresse der Baustelle. Leer, wenn nicht genannt.")
+    customer_name: str = Field(default="", description="Name des Auftraggebers. Leer, wenn nicht genannt.")
+    trade: str = Field(default="", description="Gewerk, z. B. Trockenbau, Elektro, Sanitär. Leer, wenn nicht erkennbar.")
     summary: str = Field(description="Zusammenfassung des Arbeitstages in 2-3 Sätzen")
     work_performed: list[str] = Field(default_factory=list, description="Erledigte Arbeiten, je ein Punkt")
     materials: list[MaterialItem] = Field(default_factory=list, description="Verbrauchtes Material")
