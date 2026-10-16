@@ -10,3 +10,10 @@
 
 - Ungefähre Angaben ("ca. 100 Schrauben") werden als exakte Zahl übernommen.
 - Folgeaufgaben bei Mängeln (z. B. "Installateur muss ändern") gehen teilweise verloren.
+
+## Transkription (faster-whisper)
+
+- `small`: Fachbegriffe und Zahlen falsch ("NYM" -> "endy und m", "5. Heute" -> "für den Freute").
+- `small` + Fachvokabular als `initial_prompt`: NYM korrekt, Zahlen weiterhin fehlerhaft.
+- `medium` + Fachvokabular: fehlerfrei. Entscheidung: `medium` auf der CPU (int8), GPU bleibt frei fürs LLM.
+- `av` auf 17.1.0 festgelegt: Ab Version 18 fehlt der Parameter `metadata_errors`, den faster-whisper 1.2.1 nutzt.

@@ -4,6 +4,7 @@ pydantic
 # KI
 ollama
 faster-whisper
+av<15  # av>=15 entfernt 'metadata_errors', das faster-whisper noch nutzt
 
 # PDF
 fpdf2
