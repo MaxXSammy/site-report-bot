@@ -1,3 +1,5 @@
+"""Demo: zeigt die ROHE Ausgabe des LLM, ohne Halluzinationsprüfung (zum Vergleich)."""
+
 from site_report_bot.llm import get_provider
 
 notes = [

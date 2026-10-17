@@ -1,9 +1,9 @@
+"""Demo: erzeugt ein Beispiel-PDF über die komplette Pipeline (inkl. Halluzinationsprüfung)."""
+
 import os
 from pathlib import Path
 
-from site_report_bot.llm import get_provider
-from site_report_bot.models import SiteReport
-from site_report_bot.pdf_report import create_pdf
+from site_report_bot.pipeline import InputKind, SiteInput, generate_report_pdf
 
 notes = [
     "Baustelle Müller, Hauptstraße 12 in Gevelsberg",
@@ -13,8 +13,7 @@ notes = [
     "morgen spachteln",
 ]
 
-content = get_provider().structure_report(notes)
-report = SiteReport(**content.model_dump())
-path = create_pdf(report, Path("output/demo_bericht.pdf"))
+inputs = [SiteInput(InputKind.TEXT, note) for note in notes]
+path = generate_report_pdf(inputs, output_dir=Path("output"))
 print(f"PDF erstellt: {path}")
 os.startfile(path.resolve())

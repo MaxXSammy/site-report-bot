@@ -1,18 +1,19 @@
-python-dotenv
-pydantic
+# Versionen fest, damit eine Neuinstallation genau so läuft wie getestet
+python-dotenv==1.2.4
+pydantic==2.14.1
 
-# KI
-ollama
-faster-whisper
-av<15  # av>=15 entfernt 'metadata_errors', das faster-whisper noch nutzt
+# KI (lokal)
+ollama==0.6.3
+faster-whisper==1.2.1
+av==17.1.0  # ab Version 18 fehlt 'metadata_errors', das faster-whisper 1.2.1 nutzt
 
 # PDF
-fpdf2
+fpdf2==2.8.9
 
-# WhatsApp-Webhook (Webserver)
-fastapi
-uvicorn[standard]
-httpx
+# Messenger (Telegram-Client und WhatsApp-Webhook)
+httpx==0.28.1
+fastapi==0.143.2
+uvicorn[standard]==0.54.0
 
 # Tests
-pytest
+pytest==9.1.1

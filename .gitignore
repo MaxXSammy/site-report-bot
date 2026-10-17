@@ -221,3 +221,6 @@ __marimo__/
 
 output/
 media/
+
+# Lose Screenshots im Projektordner (für die README liegen sie in docs/)
+/Screenshot*.png
