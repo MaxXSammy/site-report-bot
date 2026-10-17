@@ -46,7 +46,10 @@ class TelegramClient:
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{file_id}{Path(remote_path).suffix}"
         response = self.http.get(f"{self.file_base}/{remote_path}")
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise TelegramError(
+                f"Download fehlgeschlagen (HTTP {response.status_code})"
+            )
         target.write_bytes(response.content)
         return target
 
