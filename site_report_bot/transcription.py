@@ -17,7 +17,9 @@ def _get_model() -> WhisperModel:
 TRADE_VOCABULARY = (
     "Baustellenbericht. Baustelle, Hausnummer, NYM-Kabel, Gipskarton, Rigips, "
     "Trockenbau, Estrich, Spachteln, Fliesen, Unterverteilung, Steckdosen, "
-    "Wasseranschluss, Installateur, Lehrling, Geselle, Stunden, Stück, Rollen, Meter."
+    "Wasseranschluss, Installateur, Lehrling, Geselle, Stunden, Stück, Rollen, Meter, "
+    "Wandpaneele, Montagekleber, Kartuschen, Abschlussleisten, Sockelleisten. "
+    "Gevelsberg, Ennepetal, Schwelm, Hagen, Wuppertal, Sprockhövel."
 )
 
 

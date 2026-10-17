@@ -6,9 +6,13 @@ from pydantic import BaseModel, Field
 
 
 class MaterialItem(BaseModel):
-    name: str = Field(description="Bezeichnung des Materials, z. B. 'Gipskartonplatte 12,5 mm'")
+    name: str = Field(
+        description="Bezeichnung des Materials, z. B. 'Gipskartonplatte 12,5 mm'"
+    )
     quantity: float | None = Field(default=None, description="Menge, nur falls genannt")
-    unit: str | None = Field(default=None, description="Einheit, z. B. Stück, m², kg, lfm")
+    unit: str | None = Field(
+        default=None, description="Einheit, z. B. Stück, m², kg, lfm"
+    )
 
 
 class LaborEntry(BaseModel):
@@ -19,21 +23,45 @@ class LaborEntry(BaseModel):
 class ReportContent(BaseModel):
     """Felder, die das LLM aus den Nachrichten des Handwerkers extrahiert."""
 
-    project_name: str = Field(default="", description="Bezeichnung des Bauvorhabens, z. B. 'Baustelle Müller'. Leer, wenn nicht genannt.")
-    site_address: str = Field(default="", description="Adresse der Baustelle. Leer, wenn nicht genannt.")
-    customer_name: str = Field(default="", description="Name des Auftraggebers. Leer, wenn nicht genannt.")
-    trade: str = Field(default="", description="Gewerk, z. B. Trockenbau, Elektro, Sanitär. Leer, wenn nicht erkennbar.")
+    project_name: str = Field(
+        default="",
+        description="Bezeichnung des Bauvorhabens. Leer, wenn nicht genannt.",
+    )
+    site_address: str = Field(
+        default="", description="Adresse der Baustelle. Leer, wenn nicht genannt."
+    )
+    customer_name: str = Field(
+        default="", description="Name des Auftraggebers. Leer, wenn nicht genannt."
+    )
+    trade: str = Field(
+        default="",
+        description="Gewerk, z. B. Trockenbau, Elektro, Sanitär. Leer, wenn nicht erkennbar.",
+    )
     summary: str = Field(description="Zusammenfassung des Arbeitstages in 2-3 Sätzen")
-    work_performed: list[str] = Field(default_factory=list, description="Erledigte Arbeiten, je ein Punkt")
-    materials: list[MaterialItem] = Field(default_factory=list, description="Verbrauchtes Material")
+    work_performed: list[str] = Field(
+        default_factory=list, description="Erledigte Arbeiten, je ein Punkt"
+    )
+    materials: list[MaterialItem] = Field(
+        default_factory=list, description="Verbrauchtes Material"
+    )
     labor: list[LaborEntry] = Field(default_factory=list, description="Arbeitszeiten")
-    issues: list[str] = Field(default_factory=list, description="Mängel, Probleme, Behinderungen")
-    next_steps: list[str] = Field(default_factory=list, description="Geplante nächste Schritte")
+    issues: list[str] = Field(
+        default_factory=list, description="Mängel, Probleme, Behinderungen"
+    )
+    next_steps: list[str] = Field(
+        default_factory=list, description="Geplante nächste Schritte"
+    )
+    remarks: list[str] = Field(
+        default_factory=list,
+        description="Abnahme, Absprachen mit dem Kunden, sonstige Bemerkungen",
+    )
 
 
 class PhotoEntry(BaseModel):
     file_path: str
-    caption: str = Field(description="Kurze Beschreibung, was auf dem Foto zu sehen ist")
+    caption: str = Field(
+        description="Kurze Beschreibung, was auf dem Foto zu sehen ist"
+    )
 
 
 class SiteReport(ReportContent):

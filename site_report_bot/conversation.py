@@ -56,7 +56,8 @@ class Conversation:
 
         self.sessions[sender].append(item)
         count = len(self.sessions[sender])
-        yield Reply(f"✔ {LABELS[item.kind]} gespeichert ({count} Einträge).")
+        noun = "Eintrag" if count == 1 else "Einträge"
+        yield Reply(f"✔ {LABELS[item.kind]} gespeichert ({count} {noun}).")
 
     def _create_report(self, sender: str) -> Iterator[Reply]:
         inputs = self.sessions.get(sender)

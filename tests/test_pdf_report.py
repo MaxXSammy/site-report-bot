@@ -8,6 +8,7 @@ def test_create_pdf(tmp_path):
         summary="Testbericht mit Umlauten: äöüß",
         materials=[MaterialItem(name="Schrauben", quantity=100, unit="Stück")],
         labor=[LaborEntry(worker="Geselle", hours=7.5)],
+        remarks=["Abnahme durch Kunden erfolgt"],
     )
     path = create_pdf(report, tmp_path / "bericht.pdf")
     assert path.exists()

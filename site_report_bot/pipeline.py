@@ -10,6 +10,7 @@ from site_report_bot.llm import LLMProvider, get_provider
 from site_report_bot.models import PhotoEntry, SiteReport
 from site_report_bot.pdf_report import create_pdf
 from site_report_bot.transcription import transcribe
+from site_report_bot.grounding import fill_customer_from_project, remove_unsupported
 
 
 class InputKind(str, Enum):
@@ -49,7 +50,8 @@ def build_report(
             "Keine Text- oder Sprachnotizen vorhanden, Bericht kann nicht erstellt werden."
         )
 
-    content = provider.structure_report(notes)
+    content = remove_unsupported(provider.structure_report(notes), notes)
+    content = fill_customer_from_project(content)
     return SiteReport(**content.model_dump(), photos=photos)
 
 

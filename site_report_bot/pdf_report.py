@@ -144,9 +144,15 @@ def create_pdf(report: SiteReport, output_path: Path) -> Path:
     pdf.section_title("Nächste Schritte")
     pdf.bullet_list(report.next_steps)
 
+    pdf.section_title("Abnahme und Bemerkungen")
+    pdf.bullet_list(report.remarks)
+
     # Fotos
     photos = [p for p in report.photos if Path(p.file_path).exists()]
     if photos:
+        # Überschrift nie allein am Seitenende: Platz für Titel + erstes Foto prüfen
+        if pdf.get_y() + 90 > pdf.page_break_trigger:
+            pdf.add_page()
         pdf.section_title("Fotodokumentation")
         for photo in photos:
             if pdf.get_y() + 75 > pdf.page_break_trigger:
