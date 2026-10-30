@@ -1,0 +1,3 @@
+[lint]
+# Klassischer Ruff-Standard: Syntaxfehler, undefinierte Namen, ungenutzte Importe
+select = ["E4", "E7", "E9", "F"]
