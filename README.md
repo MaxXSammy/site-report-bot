@@ -1,5 +1,7 @@
 # 🏗️ Site Report Bot – KI-Baustellendokumentation für Handwerker
 
+[![CI](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml)
+
 Handwerker schicken Fotos, Sprachnachrichten und Notizen per Messenger – der Bot erstellt daraus automatisch einen **strukturierten Baustellenbericht als PDF**. Läuft komplett **lokal und kostenlos**, ohne Cloud-KI.
 
 ## Das Problem
