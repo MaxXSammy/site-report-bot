@@ -1,11 +1,15 @@
 """LLM-Schicht: macht aus Rohnotizen einen strukturierten Baustellenbericht."""
 
+import logging
 from typing import Protocol
 
 import ollama
+from pydantic import ValidationError
 
 from site_report_bot.config import settings
 from site_report_bot.models import ReportContent
+
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """Du bist Assistent für Baustellendokumentation im Handwerk.
 Du erhältst Notizen eines Handwerkers (Textnachrichten und transkribierte Sprachnachrichten).
@@ -57,23 +61,35 @@ class LLMProvider(Protocol):
     def describe_photo(self, image_path: str) -> str: ...
 
 
+class LLMOutputError(ValueError):
+    """Das Modell hat auch nach erneutem Versuch keinen gültigen Bericht geliefert."""
+
+
 class OllamaProvider:
-    def __init__(self, model: str, host: str) -> None:
+    def __init__(self, model: str, host: str, client: ollama.Client | None = None, attempts: int = 2) -> None:
         self.model = model
-        self.client = ollama.Client(host=host)
+        # Timeout: Hängt das Modell, soll der Bot nach 2 Minuten antworten statt ewig zu warten
+        self.client = client or ollama.Client(host=host, timeout=120)
+        self.attempts = attempts
 
     def structure_report(self, notes: list[str]) -> ReportContent:
         notes_text = "\n".join(f"- {note}" for note in notes)
-        response = self.client.chat(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Notizen vom Tag:\n{notes_text}"},
-            ],
-            format=_llm_schema(),
-            options={"temperature": 0},
-        )
-        return ReportContent.model_validate_json(response.message.content)
+        for attempt in range(1, self.attempts + 1):
+            response = self.client.chat(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": f"Notizen vom Tag:\n{notes_text}"},
+                ],
+                format=_llm_schema(),
+                # num_predict begrenzt die Ausgabe: Eine Endlosschleife des Modells bricht ab, statt den Bot zu blockieren
+                options={"temperature": 0, "num_predict": 2048},
+            )
+            try:
+                return ReportContent.model_validate_json(response.message.content)
+            except ValidationError as error:
+                logger.warning("Ungültige LLM-Ausgabe", extra={"fehler": f"Versuch {attempt}: {error.error_count()} Felder"})
+        raise LLMOutputError("Das Modell hat keinen gültigen Bericht geliefert. Bitte schick nochmal 'Bericht'.")
 
     def describe_photo(self, image_path: str) -> str:
         response = self.client.chat(
@@ -85,7 +101,7 @@ class OllamaProvider:
                     "images": [image_path],
                 }
             ],
-            options={"temperature": 0},
+            options={"temperature": 0, "num_predict": 200},
         )
         return response.message.content.strip()
 

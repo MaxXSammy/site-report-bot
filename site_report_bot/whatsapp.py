@@ -1,13 +1,20 @@
 """WhatsApp-Kanal: empfängt Nachrichten über den Webhook der WhatsApp Cloud API."""
 
+import hashlib
+import hmac
+import json
+import logging
 from dataclasses import dataclass
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 
 from site_report_bot.config import settings
+from site_report_bot.log import pseudonym
 
 app = FastAPI(title="Site Report Bot")
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -40,6 +47,18 @@ def parse_incoming(payload: dict) -> list[IncomingMessage]:
     return messages
 
 
+def signature_valid(body: bytes, signature: str, secret: str | None = None) -> bool:
+    """Prüft die Signatur, mit der Meta jeden Aufruf unterschreibt (HMAC-SHA256 über den Rohinhalt).
+
+    Ohne konfiguriertes App-Secret wird jeder Aufruf abgelehnt: lieber nichts annehmen als alles.
+    """
+    secret = settings.whatsapp_app_secret if secret is None else secret
+    if not secret:
+        return False
+    expected = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)  # zeitkonstanter Vergleich gegen Timing-Angriffe
+
+
 @app.get("/webhook")
 def verify_webhook(
     mode: str = Query(alias="hub.mode"),
@@ -47,16 +66,18 @@ def verify_webhook(
     challenge: str = Query(alias="hub.challenge"),
 ) -> PlainTextResponse:
     """Einmalige Prüfung durch Meta beim Einrichten des Webhooks."""
-    if mode == "subscribe" and token == settings.whatsapp_verify_token:
+    if mode == "subscribe" and settings.whatsapp_verify_token and hmac.compare_digest(token, settings.whatsapp_verify_token):
         return PlainTextResponse(challenge)
     raise HTTPException(status_code=403, detail="Verifizierung fehlgeschlagen")
 
 
 @app.post("/webhook")
 async def receive_webhook(request: Request) -> dict:
-    payload = await request.json()
-    for message in parse_incoming(payload):
-        print(
-            f"[{message.kind}] von {message.sender}: {message.text or message.media_id}"
-        )
+    body = await request.body()
+    if not signature_valid(body, request.headers.get("X-Hub-Signature-256", "")):
+        logger.warning("Webhook-Aufruf mit ungültiger Signatur abgelehnt")
+        raise HTTPException(status_code=403, detail="Ungültige Signatur")
+    for message in parse_incoming(json.loads(body)):
+        # Telefonnummer und Inhalt gehören nicht ins Protokoll
+        logger.info("Nachricht empfangen", extra={"chat": pseudonym(message.sender), "art": message.kind})
     return {"status": "ok"}
