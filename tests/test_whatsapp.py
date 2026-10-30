@@ -1,5 +1,8 @@
+import dataclasses
+
 from fastapi.testclient import TestClient
 
+from site_report_bot import whatsapp
 from site_report_bot.config import settings
 from site_report_bot.whatsapp import app, parse_incoming
 
@@ -37,17 +40,27 @@ def test_status_updates_are_ignored():
     assert parse_incoming(payload) == []
 
 
-def test_webhook_verification_success():
+def test_webhook_verification_success(monkeypatch):
+    monkeypatch.setattr(whatsapp, "settings", dataclasses.replace(settings, whatsapp_verify_token="geheim"))
     response = client.get(
         "/webhook",
         params={
             "hub.mode": "subscribe",
-            "hub.verify_token": settings.whatsapp_verify_token,
+            "hub.verify_token": "geheim",
             "hub.challenge": "12345",
         },
     )
     assert response.status_code == 200
     assert response.text == "12345"
+
+
+def test_webhook_verification_without_configured_token():
+    """Ohne Verify-Token in der .env darf auch ein leeres Token nicht durchgehen."""
+    response = client.get(
+        "/webhook",
+        params={"hub.mode": "subscribe", "hub.verify_token": "", "hub.challenge": "12345"},
+    )
+    assert response.status_code == 403
 
 
 def test_webhook_verification_wrong_token():

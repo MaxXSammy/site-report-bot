@@ -47,8 +47,8 @@ class Conversation:
                 yield from self._create_report(sender)
                 return
             if command == "neu":
-                self.sessions.pop(sender, None)
-                yield Reply("Alles verworfen. Du kannst neu anfangen.")
+                self._discard(sender)
+                yield Reply("Alles verworfen, Fotos und Sprachnachrichten sind gelöscht. Du kannst neu anfangen.")
                 return
             if command in ("hilfe", "help", "start"):
                 yield Reply(HELP_TEXT)
@@ -74,5 +74,15 @@ class Conversation:
             yield Reply(f"⚠ {error}")
             return
 
-        self.sessions.pop(sender, None)
+        self._discard(sender)
         yield Reply("Fertig, hier ist dein Bericht.", document=pdf)
+
+    def _discard(self, sender: str) -> None:
+        """Verwirft die Sitzung und löscht Fotos und Sprachnachrichten.
+
+        Datensparsamkeit (DSGVO): Sprachaufnahmen und Baustellenfotos sind personenbezogene Daten
+        und werden nur so lange gespeichert, bis der Bericht erstellt oder die Sitzung verworfen ist.
+        """
+        for item in self.sessions.pop(sender, []):
+            if item.kind != InputKind.TEXT:
+                Path(item.content).unlink(missing_ok=True)

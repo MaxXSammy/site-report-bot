@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml)
 
-Handwerker schicken Fotos, Sprachnachrichten und Notizen per Messenger – der Bot erstellt daraus automatisch einen **strukturierten Baustellenbericht als PDF**. Läuft komplett **lokal und kostenlos**, ohne Cloud-KI.
+Handwerker schicken Fotos, Sprachnachrichten und Notizen per Messenger – der Bot erstellt daraus automatisch einen **strukturierten Baustellenbericht als PDF**. Die KI läuft komplett **lokal und kostenlos**, ohne Cloud-KI.
 
 ## Das Problem
 
@@ -42,6 +42,9 @@ flowchart LR
 - **Strukturierte Ausgabe:** Pydantic-Schema erzwingt feste Berichtsfelder statt Freitext.
 - **Prüfung im Code statt Vertrauen ins LLM:** Namen, Mengen und Stunden, die nicht in den Notizen stehen, werden deterministisch entfernt.
 - **Testbar ohne KI:** Dependency Injection in Pipeline und Gesprächslogik – Tests laufen mit Fakes statt echten Modellen.
+- **Zugriff nur für Freigeschaltete:** Der Telegram-Bot antwortet nur Chats aus `TELEGRAM_ALLOWED_CHAT_IDS`. Ohne Liste nimmt er von niemandem Nachrichten an. Der WhatsApp-Webhook prüft die Signatur von Meta (`X-Hub-Signature-256`) und lehnt ungeprüfte Aufrufe ab.
+- **Datensparsamkeit:** Sprachnachrichten und Baustellenfotos sind personenbezogene Daten. Sie werden gelöscht, sobald der Bericht verschickt oder die Sitzung mit „Neu“ verworfen ist. Das PDF bleibt nur beim Handwerker. Das Protokoll enthält keine Chat-IDs, Telefonnummern oder Nachrichteninhalte, nur ein Pseudonym je Chat.
+- **Robuste LLM-Aufrufe:** Timeout, begrenzte Ausgabelänge gegen Endlosschleifen und ein zweiter Versuch bei ungültigem JSON. Scheitert auch der, bleiben die Notizen erhalten und der Handwerker kann es erneut versuchen.
 
 ## Tech-Stack
 
@@ -75,7 +78,9 @@ flowchart LR
 - Die Halluzinationsprüfung ist eine Heuristik: Sie fängt erfundene Namen und Zahlen ab, aber keine umformulierten Inhalte.
 - Ungefähre Angaben („ca. 100 Schrauben“) werden als exakte Zahl übernommen.
 - Der Bot verarbeitet Nachrichten nacheinander. Während ein Bericht entsteht, warten andere Chats.
-- Sitzungen liegen im Arbeitsspeicher und gehen bei einem Neustart verloren.
+- Sitzungen liegen im Arbeitsspeicher und gehen bei einem Neustart verloren. Mediendateien aus einem früheren Lauf werden beim Start gelöscht.
+- Lokal ist die KI, nicht der Transportweg: Fotos und Sprachnachrichten laufen über die Server von Telegram bzw. Meta. Für einen produktiven Einsatz bräuchte es eine Datenschutzprüfung des Kanals oder einen eigenen, selbst gehosteten Messenger.
+- Der WhatsApp-Kanal empfängt und prüft Nachrichten, ist aber noch nicht an die Gesprächslogik angebunden (aktiv nach Meta-Unternehmensverifizierung).
 
 ## Installation
 
@@ -90,7 +95,7 @@ pip install -r requirements.txt
 ollama pull qwen2.5vl:7b
 ```
 
-`.env.example` nach `.env` kopieren und den Telegram-Token von [@BotFather](https://t.me/BotFather) eintragen.
+`.env.example` nach `.env` kopieren und den Telegram-Token von [@BotFather](https://t.me/BotFather) eintragen. Dann den Bot starten und ihm eine Nachricht schicken: Er antwortet mit der eigenen Chat-ID. Diese in `TELEGRAM_ALLOWED_CHAT_IDS` eintragen und den Bot neu starten.
 
 ## Nutzung
 
@@ -113,7 +118,7 @@ Im Chat mit dem Bot:
 pytest
 ```
 
-27 Tests decken Datenmodell, PDF-Erzeugung, Pipeline, Halluzinationsprüfung, Gesprächslogik und das Parsen von Telegram- und WhatsApp-Nachrichten ab.
+40 Tests decken Datenmodell, PDF-Erzeugung, Pipeline, Halluzinationsprüfung, Gesprächslogik und das Parsen von Telegram- und WhatsApp-Nachrichten ab, dazu Zugriffsschutz, Webhook-Signatur, das Löschen von Mediendateien, Protokolle ohne personenbezogene Daten und ungültige LLM-Ausgaben.
 
 ## Projektstruktur
 
