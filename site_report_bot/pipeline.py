@@ -6,11 +6,11 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
+from site_report_bot.grounding import fill_customer_from_project, remove_unsupported
 from site_report_bot.llm import LLMProvider, get_provider
 from site_report_bot.models import PhotoEntry, SiteReport
 from site_report_bot.pdf_report import create_pdf
 from site_report_bot.transcription import transcribe
-from site_report_bot.grounding import fill_customer_from_project, remove_unsupported
 
 
 class InputKind(str, Enum):
