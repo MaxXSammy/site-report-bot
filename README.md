@@ -1,4 +1,4 @@
-# 🏗️ Site Report Bot – KI-Baustellendokumentation für Handwerker
+# Site Report Bot – KI-Baustellendokumentation für Handwerker
 
 [![CI](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxXSammy/site-report-bot/actions/workflows/ci.yml)
 
